@@ -16,6 +16,21 @@ class Assembler:
     def assembler(self):
         try:
             parser = Parser(self.ASM_FILE)
+            while parser.hasMoreCommands():
+                parser.advance()
+                command_type = parser.commandType()
+
+                print(parser.current_command)
+
+                if command_type in (parser.A_COMMAND, parser.L_COMMAND):
+                    symbol = parser.symbol()
+                    print("symbol: %s" % symbol)
+
+                elif command_type == parser.C_COMMAND:
+                    dest = parser.dest()
+                    comp = parser.comp()
+                    jump = parser.jump()
+                    print("dest: %s\ncomp: %s\njump: %s" % (dest, comp, jump))
 
         except IOError:
             print("Файл Prog.asm не удалось открыть. Мы ожидаем, что он лежит по пути: {0} . Пожалуйста, "
