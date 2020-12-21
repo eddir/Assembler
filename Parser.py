@@ -71,7 +71,7 @@ class Parser:
         # Поля dest или jump могут быть пустыми.
         # Если dest пусто, то «=» опускается.
         # Если jump пусто, то «;» опускается.
-        elif re.match(r'^(([A-Z0-9]*=)?([A-Z0-9])*(;[A-Z0-9]*)?)$', self.current_command):
+        elif re.match(r'^(([A-Z0-9]*=)?[-\\!]?([A-Z0-9])*([+-\\&|][A-Z0-9])?(;[A-Z0-9]*)?)$', self.current_command):
             return self.C_COMMAND
 
         # TODO: выяснить что такое L_COMMAND
@@ -102,16 +102,16 @@ class Parser:
         """ Возвращает мнемонику comp в текущей С-команде (28 возможных вариантов). Вызывается только когда
         commandType() есть C_COMMAND.
         """
+        delimiter1 = 0
+        delimiter2 = len(self.current_command)
 
         if '=' in self.current_command:
-            delimiter1 = self.current_command.find('=')
-            if ';' in self.current_command:
-                delimiter2 = self.current_command.find(';')
-                return self.current_command[delimiter1+1:delimiter2]
-            else:
-                return self.current_command[delimiter1+1:]
-        else:
-            return self.current_command
+            delimiter1 = self.current_command.find('=') + 1
+
+        if ';' in self.current_command:
+            delimiter2 = self.current_command.find(';')
+
+        return self.current_command[delimiter1:delimiter2]
 
     def jump(self):
         """ Возвращает мнемонику jump в текущей С-команде (8 возможных вариантов). Вызывается только когда commandType()
