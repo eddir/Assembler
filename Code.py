@@ -2,7 +2,7 @@
 """
 
 
-def dest(mnemonic):
+def dest(mnemonic: str):
     """Возвращает бинарный код мнемоники dest.
     :param mnemonic: мнемоника dest, которую необходимо преобразовать в бинарное представление команды
     :return: string
@@ -21,7 +21,7 @@ def dest(mnemonic):
     return instructions[mnemonic] if mnemonic in instructions else instructions['null']
 
 
-def comp(mnemonic):
+def comp(mnemonic: str):
     """Возвращает бинарный код мнемоники comp.
     :param mnemonic: мнемоника comp, которую необходимо преобразовать в бинарное представление команды
     :return: string
@@ -71,7 +71,7 @@ def comp(mnemonic):
     raise ValueError('Invalid mnemonic %s' % mnemonic)
 
 
-def jump(mnemonic):
+def jump(mnemonic: str):
     """Возвращает бинарный код мнемоники jump.
     :param mnemonic: мнемоника jump, которую необходимо преобразовать в бинарное представление команды
     :return: string

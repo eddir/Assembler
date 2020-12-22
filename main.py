@@ -3,6 +3,7 @@ import time
 
 import Code
 from Parser import Parser
+from SymbolTabel import SymbolTable
 
 
 class Assembler:
@@ -29,23 +30,46 @@ class Assembler:
 
     def assembler(self):
         try:
+            # Первый проход. Строим таблицу символов
+            table = SymbolTable()
+            parser = Parser(self.ASM_FILE)
+            instruction_address = 0
+            while parser.hasMoreCommands():
+                parser.advance()
+                command_type = parser.commandType()
+
+                if command_type in (parser.A_COMMAND, parser.C_COMMAND):
+                    instruction_address += 1
+                elif command_type == parser.L_COMMAND:
+                    # Сохраняем адрес для новой псевдокоманды
+                    table.addEntry(parser.symbol(), instruction_address)
+
+            # Второй проход.
             parser = Parser(self.ASM_FILE)
             while parser.hasMoreCommands():
                 parser.advance()
                 command_type = parser.commandType()
 
-                if command_type in (parser.A_COMMAND, parser.L_COMMAND):
+                if command_type == parser.A_COMMAND:
                     symbol = parser.symbol()
-                    command = "0" + bin(int(symbol))[2:].rjust(15, '0')  # Заполняем нулями недостающие биты
+
+                    if symbol.isnumeric():
+                        command = "0" + bin(int(symbol))[2:].rjust(15, '0')  # Заполняем нулями недостающие биты
+                    else:
+                        if table.contains(symbol):
+                            command = table.GetAddress(symbol)
+                        else:
+                            # Найдена неизвестная псевдокоманда. Запрашиваем адрес для неё.
+                            command = table.addEntry(symbol)
+
+                    self.output.write("%s\n" % command)
 
                 elif command_type == parser.C_COMMAND:
                     command = '111' + Code.comp(parser.comp()) + Code.dest(parser.dest()) + Code.jump(parser.jump())
+                    self.output.write("%s\n" % command)
 
-                else:
+                elif command_type != parser.L_COMMAND:
                     raise ValueError("Invalid command %s" % parser.current_command)
-
-                #print("mnemonic: %s, command: %s" % (command, parser.current_command))
-                self.output.write("%s\n" % command)
 
         except IOError:
             print("Файл Prog.asm не удалось открыть. Мы ожидаем, что он лежит по пути: {0} . Пожалуйста, "

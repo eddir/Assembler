@@ -18,9 +18,9 @@ class Parser:
     # Типы команд
     A_COMMAND = 1  # @Xxx, где Xxx есть либо символ, либо десятичное число
     C_COMMAND = 2  # dest=comp;jump
-    L_COMMAND = 3  # (Xxx), где Xxx есть символ.
+    L_COMMAND = 3  # (Xxx), где Xxx есть символ. В действительности псевдокоманда
 
-    def __init__(self, path):
+    def __init__(self, path: str):
         """Открывает входной файл/поток и приготавливается к его обработке
         """
         self.file = open(path)
@@ -54,6 +54,10 @@ class Parser:
         есть true. Первоначально текущей команды нет.
         """
 
+        # Игнорируются комментарии
+        if "//" in self.current_line:
+            self.current_line = self.current_line[:self.current_line.find("//")]
+
         # Текущая команда извлекается путём удаления из строки знаков табуляции слева и справа.
         self.current_command = self.current_line.strip()
 
@@ -74,8 +78,7 @@ class Parser:
         elif re.match(r'^(([A-Z0-9]*=)?[-\\!]?([A-Z0-9])*([+-\\&|][A-Z0-9])?(;[A-Z0-9]*)?)$', self.current_command):
             return self.C_COMMAND
 
-        # TODO: выяснить что такое L_COMMAND
-        elif re.match(r'^([A-Z0-9])*$', self.current_command):
+        elif re.match(r'^\([A-Za-z0-9_\\.:$]*\)$', self.current_command):
             return self.L_COMMAND
 
         return False
@@ -85,7 +88,7 @@ class Parser:
         когда commandType() есть A_COMMAND или L_COMMAND.
         """
 
-        return self.current_command.replace('@', '')
+        return re.sub('[@()]', '', self.current_command)
 
     def dest(self):
         """Возвращает мнемонику dest в текущей С-команде (8 возможных вариантов). Вызывается только когда commandType()
